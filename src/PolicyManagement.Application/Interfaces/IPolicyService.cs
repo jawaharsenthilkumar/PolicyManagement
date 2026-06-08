@@ -17,4 +17,6 @@ public interface IPolicyService
         string sortBy = "createdAt",
         string sortDirection = "desc",
         CancellationToken cancellationToken = default);
+
+    Task<PolicyDto> GetPolicyByIdAsync(Guid id, CancellationToken cancellationToken = default);
 }

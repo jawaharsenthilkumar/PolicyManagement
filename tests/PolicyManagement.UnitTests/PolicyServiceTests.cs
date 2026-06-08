@@ -124,6 +124,39 @@ public class PolicyServiceTests
         Assert.Equal(5, result.TotalPages); // ceil(42/10) = 5
     }
 
+    // ── 6 (Feature 2) ─────────────────────────────────────────────────────────
+    [Fact]
+    public async Task GetPolicyByIdAsync_WithValidId_ReturnsMappedPolicy()
+    {
+        // Arrange
+        var policy = MakePolicy("POL-000001", PolicyStatus.Active, LineOfBusiness.Marine);
+        _repo.Setup(r => r.GetByIdAsync(policy.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(policy);
+
+        // Act
+        var result = await _sut.GetPolicyByIdAsync(policy.Id);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.IsType<PolicyDto>(result);
+        Assert.Equal("POL-000001", result.PolicyNumber);
+        Assert.Equal("Active", result.Status);
+        Assert.Equal("Marine", result.LineOfBusiness);
+    }
+
+    // ── 7 (Feature 2) ─────────────────────────────────────────────────────────
+    [Fact]
+    public async Task GetPolicyByIdAsync_WithInvalidId_ThrowsKeyNotFoundException()
+    {
+        // Arrange
+        _repo.Setup(r => r.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Policy?)null);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<KeyNotFoundException>(
+            () => _sut.GetPolicyByIdAsync(Guid.NewGuid()));
+    }
+
     // ── 5 ─────────────────────────────────────────────────────────────────────
     [Fact]
     public async Task GetPoliciesAsync_HandlesEmptyResults()

@@ -105,6 +105,39 @@ public class PolicyRepositoryTests
         Assert.Equal("POL-000001", result.PolicyNumber);
     }
 
+    // ── 6 (Feature 2) ─────────────────────────────────────────────────────────
+    [Fact]
+    public async Task GetByIdAsync_ReturnsAllFieldsCorrectly()
+    {
+        // Arrange
+        var db = Guid.NewGuid().ToString();
+        await using var ctx = CreateContext(db);
+        var policy = new Policy(
+            "POL-F2-001", "Wei Wong", LineOfBusiness.Marine, PolicyStatus.Expired,
+            75_000m, "SGD",
+            new DateTime(2023, 6, 1, 0, 0, 0, DateTimeKind.Utc),
+            new DateTime(2024, 6, 1, 0, 0, 0, DateTimeKind.Utc),
+            "Hong Kong", "Bob Lee");
+        ctx.Policies.Add(policy);
+        await ctx.SaveChangesAsync();
+        var repo = new PolicyRepository(ctx);
+
+        // Act
+        var result = await repo.GetByIdAsync(policy.Id);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(policy.Id, result.Id);
+        Assert.Equal("POL-F2-001", result.PolicyNumber);
+        Assert.Equal("Wei Wong", result.PolicyholderName);
+        Assert.Equal(LineOfBusiness.Marine, result.LineOfBusiness);
+        Assert.Equal(PolicyStatus.Expired, result.Status);
+        Assert.Equal(75_000m, result.PremiumAmount);
+        Assert.Equal("SGD", result.Currency);
+        Assert.Equal("Hong Kong", result.Region);
+        Assert.Equal("Bob Lee", result.Underwriter);
+    }
+
     // ── 5 ─────────────────────────────────────────────────────────────────────
     [Fact]
     public async Task GetByIdAsync_WithInvalidId_ReturnsNull()

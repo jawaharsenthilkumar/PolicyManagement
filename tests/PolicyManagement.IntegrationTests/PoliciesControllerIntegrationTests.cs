@@ -101,6 +101,36 @@ public class PoliciesControllerIntegrationTests : IClassFixture<PolicyManagement
         Assert.Equal(10, result.Items.Count);
     }
 
+    // ── 6 (Feature 2) ─────────────────────────────────────────────────────────
+    [Fact]
+    public async Task GetPolicyById_WithValidId_Returns200WithPolicyDto()
+    {
+        // Arrange — pull a real ID from the seeded list
+        var list = await GetPoliciesAsync("?page=1&size=1");
+        var validId = list.Items[0].Id;
+
+        // Act
+        var response = await _client.GetAsync($"/api/v1/policies/{validId}");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var json = await response.Content.ReadAsStringAsync();
+        var result = JsonSerializer.Deserialize<PolicyDto>(json, Json)!;
+        Assert.NotNull(result);
+        Assert.Equal(validId, result.Id);
+    }
+
+    // ── 7 (Feature 2) ─────────────────────────────────────────────────────────
+    [Fact]
+    public async Task GetPolicyById_WithInvalidId_Returns404()
+    {
+        // Act
+        var response = await _client.GetAsync($"/api/v1/policies/{Guid.NewGuid()}");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
     // ── 5 ─────────────────────────────────────────────────────────────────────
     [Fact]
     public async Task GetPolicies_WithAllParameters_WorksCorrectly()

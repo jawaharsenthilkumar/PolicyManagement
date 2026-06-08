@@ -49,4 +49,16 @@ public class PolicyService : IPolicyService
             Size = result.Size
         };
     }
+
+    public async Task<PolicyDto> GetPolicyByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation("GetPolicyByIdAsync: id={Id}", id);
+
+        var policy = await _repository.GetByIdAsync(id, cancellationToken);
+
+        if (policy is null)
+            throw new KeyNotFoundException($"Policy with id '{id}' was not found.");
+
+        return _mapper.Map<PolicyDto>(policy);
+    }
 }

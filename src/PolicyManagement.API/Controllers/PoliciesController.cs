@@ -56,4 +56,20 @@ public class PoliciesController : ControllerBase
 
         return Ok(result);
     }
+
+    /// <summary>
+    /// Returns a single policy by its unique identifier.
+    /// </summary>
+    /// <param name="id">The policy GUID.</param>
+    [HttpGet("{id:guid}")]
+    [ProducesResponseType(typeof(PolicyDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> GetPolicyById(
+        [FromRoute] Guid id,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await _service.GetPolicyByIdAsync(id, cancellationToken);
+        return Ok(result);
+    }
 }
