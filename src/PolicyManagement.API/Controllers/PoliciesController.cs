@@ -58,6 +58,26 @@ public class PoliciesController : ControllerBase
     }
 
     /// <summary>
+    /// Returns aggregated summary statistics with optional filtering.
+    /// </summary>
+    /// <param name="status">Filter by policy status.</param>
+    /// <param name="lineOfBusiness">Filter by line of business.</param>
+    /// <param name="region">Filter by APAC region.</param>
+    [HttpGet("summary")]
+    [ProducesResponseType(typeof(PolicySummaryDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> GetSummary(
+        [FromQuery] PolicyStatus? status = null,
+        [FromQuery] LineOfBusiness? lineOfBusiness = null,
+        [FromQuery] string? region = null,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await _service.GetSummaryAsync(status, lineOfBusiness, region, cancellationToken);
+        return Ok(result);
+    }
+
+    /// <summary>
     /// Returns a single policy by its unique identifier.
     /// </summary>
     /// <param name="id">The policy GUID.</param>

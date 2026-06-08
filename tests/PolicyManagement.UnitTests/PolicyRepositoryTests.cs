@@ -153,4 +153,35 @@ public class PolicyRepositoryTests
         // Assert
         Assert.Null(result);
     }
+
+    // ── 7 (Feature 3) ─────────────────────────────────────────────────────────
+    [Fact]
+    public async Task GetSummaryAsync_ReturnsCorrectAggregates()
+    {
+        // Arrange
+        var db = Guid.NewGuid().ToString();
+        await using var ctx = CreateContext(db);
+        var today = DateTime.UtcNow.Date;
+
+        ctx.Policies.Add(MakePolicy("POL-S001", PolicyStatus.Active));
+        ctx.Policies.Add(MakePolicy("POL-S002", PolicyStatus.Active));
+        ctx.Policies.Add(MakePolicy("POL-S003", PolicyStatus.Expired));
+        // One policy expiring within 30 days (Marine LOB to distinguish from MakePolicy's Property)
+        ctx.Policies.Add(new Policy(
+            "POL-S004", "User D", LineOfBusiness.Marine, PolicyStatus.Active,
+            5_000m, "USD", today.AddDays(-30), today.AddDays(10), "Singapore", "Alice Tan"));
+        await ctx.SaveChangesAsync();
+        var repo = new PolicyRepository(ctx);
+
+        // Act
+        var result = await repo.GetSummaryAsync();
+
+        // Assert
+        Assert.Equal(4, result.TotalPolicies);
+        Assert.Equal(3, result.CountByStatus["Active"]);
+        Assert.Equal(1, result.CountByStatus["Expired"]);
+        Assert.Equal(30_000m, result.TotalPremiumByLOB["Property"]);
+        Assert.Equal(5_000m, result.TotalPremiumByLOB["Marine"]);
+        Assert.Equal(1, result.ExpiringWithin30Days);
+    }
 }

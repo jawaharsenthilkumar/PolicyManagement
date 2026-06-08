@@ -145,4 +145,21 @@ public class PoliciesControllerIntegrationTests : IClassFixture<PolicyManagement
         Assert.All(result.Items, p => Assert.Equal("Active", p.Status));
         Assert.All(result.Items, p => Assert.Equal("Singapore", p.Region));
     }
+
+    // ── 8 (Feature 3) ─────────────────────────────────────────────────────────
+    [Fact]
+    public async Task GetSummary_Returns200WithAggregatedStats()
+    {
+        // Act
+        var response = await _client.GetAsync("/api/v1/policies/summary");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var json = await response.Content.ReadAsStringAsync();
+        var result = JsonSerializer.Deserialize<PolicySummaryDto>(json, Json)!;
+        Assert.NotNull(result);
+        Assert.True(result.TotalPolicies > 0);
+        Assert.NotEmpty(result.CountByStatus);
+        Assert.NotEmpty(result.TotalPremiumByLOB);
+    }
 }

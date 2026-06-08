@@ -172,4 +172,34 @@ public class PolicyServiceTests
         Assert.Equal(0, result.Total);
         Assert.Equal(0, result.TotalPages);
     }
+
+    // ── 8 (Feature 3) ─────────────────────────────────────────────────────────
+    [Fact]
+    public async Task GetSummaryAsync_CallsRepositoryAndReturnsResult()
+    {
+        // Arrange
+        var expected = new PolicySummaryDto
+        {
+            TotalPolicies = 10,
+            CountByStatus = new Dictionary<string, int> { ["Active"] = 6, ["Expired"] = 4 },
+            TotalPremiumByLOB = new Dictionary<string, decimal> { ["Marine"] = 500_000m },
+            ExpiringWithin30Days = 2
+        };
+        _repo.Setup(r => r.GetSummaryAsync(
+                It.IsAny<PolicyStatus?>(), It.IsAny<LineOfBusiness?>(),
+                It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(expected);
+
+        // Act
+        var result = await _sut.GetSummaryAsync();
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(10, result.TotalPolicies);
+        Assert.Equal(2, result.ExpiringWithin30Days);
+        Assert.Equal(6, result.CountByStatus["Active"]);
+        _repo.Verify(r => r.GetSummaryAsync(
+            It.IsAny<PolicyStatus?>(), It.IsAny<LineOfBusiness?>(),
+            It.IsAny<string?>(), It.IsAny<CancellationToken>()), Times.Once);
+    }
 }

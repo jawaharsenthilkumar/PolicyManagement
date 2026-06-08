@@ -94,4 +94,51 @@ public class PolicyRepository : IPolicyRepository
         await _context.Policies
             .AsNoTracking()
             .AnyAsync(p => p.Id == id, cancellationToken);
+
+    public async Task<PolicySummaryDto> GetSummaryAsync(
+        PolicyStatus? status = null,
+        LineOfBusiness? lineOfBusiness = null,
+        string? region = null,
+        CancellationToken cancellationToken = default)
+    {
+        var query = _context.Policies.AsNoTracking();
+
+        if (status.HasValue)
+            query = query.Where(p => p.Status == status.Value);
+
+        if (lineOfBusiness.HasValue)
+            query = query.Where(p => p.LineOfBusiness == lineOfBusiness.Value);
+
+        if (!string.IsNullOrWhiteSpace(region))
+            query = query.Where(p => p.Region == region);
+
+        var total = await query.CountAsync(cancellationToken);
+
+        // Cast enum key to int before projection so EF Core can translate to SQL,
+        // then convert back to string in memory after materialisation.
+        var statusGroups = await query
+            .GroupBy(p => p.Status)
+            .Select(g => new { Key = (int)g.Key, Count = g.Count() })
+            .ToListAsync(cancellationToken);
+
+        var lobGroups = await query
+            .GroupBy(p => p.LineOfBusiness)
+            .Select(g => new { Key = (int)g.Key, Total = g.Sum(p => p.PremiumAmount) })
+            .ToListAsync(cancellationToken);
+
+        var today = DateTime.UtcNow.Date;
+        var cutoff = today.AddDays(30);
+        var expiring = await query
+            .CountAsync(p => p.ExpiryDate >= today && p.ExpiryDate <= cutoff, cancellationToken);
+
+        return new PolicySummaryDto
+        {
+            TotalPolicies = total,
+            CountByStatus = statusGroups.ToDictionary(
+                x => ((PolicyStatus)x.Key).ToString(), x => x.Count),
+            TotalPremiumByLOB = lobGroups.ToDictionary(
+                x => ((LineOfBusiness)x.Key).ToString(), x => x.Total),
+            ExpiringWithin30Days = expiring
+        };
+    }
 }

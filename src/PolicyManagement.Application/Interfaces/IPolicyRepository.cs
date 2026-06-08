@@ -24,4 +24,10 @@ public interface IPolicyRepository
     Task CreateAsync(Policy policy, CancellationToken cancellationToken = default);
 
     Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken = default);
+
+    Task<PolicySummaryDto> GetSummaryAsync(
+        PolicyStatus? status = null,
+        LineOfBusiness? lineOfBusiness = null,
+        string? region = null,
+        CancellationToken cancellationToken = default);
 }

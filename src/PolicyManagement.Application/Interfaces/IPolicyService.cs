@@ -19,4 +19,10 @@ public interface IPolicyService
         CancellationToken cancellationToken = default);
 
     Task<PolicyDto> GetPolicyByIdAsync(Guid id, CancellationToken cancellationToken = default);
+
+    Task<PolicySummaryDto> GetSummaryAsync(
+        PolicyStatus? status = null,
+        LineOfBusiness? lineOfBusiness = null,
+        string? region = null,
+        CancellationToken cancellationToken = default);
 }

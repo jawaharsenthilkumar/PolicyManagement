@@ -61,4 +61,17 @@ public class PolicyService : IPolicyService
 
         return _mapper.Map<PolicyDto>(policy);
     }
+
+    public async Task<PolicySummaryDto> GetSummaryAsync(
+        PolicyStatus? status = null,
+        LineOfBusiness? lineOfBusiness = null,
+        string? region = null,
+        CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation(
+            "GetSummaryAsync: status={Status}, lob={LineOfBusiness}, region={Region}",
+            status, lineOfBusiness, region);
+
+        return await _repository.GetSummaryAsync(status, lineOfBusiness, region, cancellationToken);
+    }
 }
