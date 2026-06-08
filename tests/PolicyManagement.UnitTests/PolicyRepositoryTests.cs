@@ -154,6 +154,31 @@ public class PolicyRepositoryTests
         Assert.Null(result);
     }
 
+    // ── 8 (Feature 4) ─────────────────────────────────────────────────────────
+    [Fact]
+    public async Task FlagPoliciesAsync_WithValidIds_FlagsAllPolicies()
+    {
+        // Arrange
+        var db = Guid.NewGuid().ToString();
+        await using var ctx = CreateContext(db);
+        var p1 = MakePolicy("POL-F001");
+        var p2 = MakePolicy("POL-F002");
+        ctx.Policies.AddRange(p1, p2);
+        await ctx.SaveChangesAsync();
+        var repo = new PolicyRepository(ctx);
+
+        // Act
+        await repo.FlagPoliciesAsync([p1.Id, p2.Id]);
+
+        // Assert — open a fresh context to confirm persistence
+        await using var verify = CreateContext(db);
+        var flagged = await verify.Policies
+            .Where(p => p.PolicyNumber == "POL-F001" || p.PolicyNumber == "POL-F002")
+            .ToListAsync();
+        Assert.Equal(2, flagged.Count);
+        Assert.All(flagged, p => Assert.True(p.FlaggedForReview));
+    }
+
     // ── 7 (Feature 3) ─────────────────────────────────────────────────────────
     [Fact]
     public async Task GetSummaryAsync_ReturnsCorrectAggregates()

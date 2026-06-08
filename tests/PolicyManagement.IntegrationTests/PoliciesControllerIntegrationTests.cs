@@ -146,6 +146,28 @@ public class PoliciesControllerIntegrationTests : IClassFixture<PolicyManagement
         Assert.All(result.Items, p => Assert.Equal("Singapore", p.Region));
     }
 
+    // ── 9 (Feature 4) ─────────────────────────────────────────────────────────
+    [Fact]
+    public async Task BulkFlagPolicies_WithValidIds_Returns200()
+    {
+        // Arrange — get two real IDs from the seeded list
+        var list = await GetPoliciesAsync("?page=1&size=2");
+        var ids = list.Items.Select(p => p.Id).ToList();
+        var body = JsonSerializer.Serialize(new { policyIds = ids });
+        var content = new StringContent(body, System.Text.Encoding.UTF8, "application/json");
+
+        // Act
+        var response = await _client.PatchAsync("/api/v1/policies/flag", content);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var json = await response.Content.ReadAsStringAsync();
+        var result = JsonSerializer.Deserialize<BulkFlagResultDto>(json, Json)!;
+        Assert.Equal(2, result.SuccessCount);
+        Assert.Equal(0, result.FailedCount);
+        Assert.Empty(result.FailedIds);
+    }
+
     // ── 8 (Feature 3) ─────────────────────────────────────────────────────────
     [Fact]
     public async Task GetSummary_Returns200WithAggregatedStats()

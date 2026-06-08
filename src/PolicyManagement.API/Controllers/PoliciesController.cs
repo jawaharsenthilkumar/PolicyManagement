@@ -78,6 +78,22 @@ public class PoliciesController : ControllerBase
     }
 
     /// <summary>
+    /// Bulk-flags a list of policies for review.
+    /// </summary>
+    /// <param name="request">Request body containing the list of policy IDs to flag.</param>
+    [HttpPatch("flag")]
+    [ProducesResponseType(typeof(BulkFlagResultDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> BulkFlagPolicies(
+        [FromBody] BulkFlagPoliciesRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await _service.BulkFlagPoliciesAsync(request.PolicyIds, cancellationToken);
+        return Ok(result);
+    }
+
+    /// <summary>
     /// Returns a single policy by its unique identifier.
     /// </summary>
     /// <param name="id">The policy GUID.</param>

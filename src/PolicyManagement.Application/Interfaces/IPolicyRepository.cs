@@ -30,4 +30,6 @@ public interface IPolicyRepository
         LineOfBusiness? lineOfBusiness = null,
         string? region = null,
         CancellationToken cancellationToken = default);
+
+    Task FlagPoliciesAsync(List<Guid> policyIds, CancellationToken cancellationToken = default);
 }

@@ -74,4 +74,29 @@ public class PolicyService : IPolicyService
 
         return await _repository.GetSummaryAsync(status, lineOfBusiness, region, cancellationToken);
     }
+
+    public async Task<BulkFlagResultDto> BulkFlagPoliciesAsync(
+        List<Guid> policyIds,
+        CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation("BulkFlagPoliciesAsync: flagging {Count} policies", policyIds.Count);
+
+        if (policyIds.Count == 0)
+        {
+            _logger.LogWarning("BulkFlagPoliciesAsync called with empty list");
+            return new BulkFlagResultDto { SuccessCount = 0, FailedCount = 0, FailedIds = [] };
+        }
+
+        try
+        {
+            await _repository.FlagPoliciesAsync(policyIds, cancellationToken);
+            _logger.LogInformation("BulkFlagPoliciesAsync: successfully flagged {Count} policies", policyIds.Count);
+            return new BulkFlagResultDto { SuccessCount = policyIds.Count, FailedCount = 0, FailedIds = [] };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "BulkFlagPoliciesAsync failed for {Count} policies", policyIds.Count);
+            throw;
+        }
+    }
 }

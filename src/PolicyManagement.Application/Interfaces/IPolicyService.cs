@@ -25,4 +25,8 @@ public interface IPolicyService
         LineOfBusiness? lineOfBusiness = null,
         string? region = null,
         CancellationToken cancellationToken = default);
+
+    Task<BulkFlagResultDto> BulkFlagPoliciesAsync(
+        List<Guid> policyIds,
+        CancellationToken cancellationToken = default);
 }

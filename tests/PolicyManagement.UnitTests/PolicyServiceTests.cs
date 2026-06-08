@@ -173,6 +173,39 @@ public class PolicyServiceTests
         Assert.Equal(0, result.TotalPages);
     }
 
+    // ── 9 (Feature 4) ─────────────────────────────────────────────────────────
+    [Fact]
+    public async Task BulkFlagPoliciesAsync_WithValidIds_ReturnsSuccess()
+    {
+        // Arrange
+        var ids = new List<Guid> { Guid.NewGuid(), Guid.NewGuid() };
+        _repo.Setup(r => r.FlagPoliciesAsync(It.IsAny<List<Guid>>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        // Act
+        var result = await _sut.BulkFlagPoliciesAsync(ids);
+
+        // Assert
+        Assert.Equal(2, result.SuccessCount);
+        Assert.Equal(0, result.FailedCount);
+        Assert.Empty(result.FailedIds);
+        _repo.Verify(r => r.FlagPoliciesAsync(It.IsAny<List<Guid>>(), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    // ── 10 (Feature 4) ────────────────────────────────────────────────────────
+    [Fact]
+    public async Task BulkFlagPoliciesAsync_WithEmptyList_ReturnsZeroWithoutCallingRepo()
+    {
+        // Act
+        var result = await _sut.BulkFlagPoliciesAsync([]);
+
+        // Assert
+        Assert.Equal(0, result.SuccessCount);
+        Assert.Equal(0, result.FailedCount);
+        Assert.Empty(result.FailedIds);
+        _repo.Verify(r => r.FlagPoliciesAsync(It.IsAny<List<Guid>>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
     // ── 8 (Feature 3) ─────────────────────────────────────────────────────────
     [Fact]
     public async Task GetSummaryAsync_CallsRepositoryAndReturnsResult()

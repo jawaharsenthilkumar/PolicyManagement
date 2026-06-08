@@ -141,4 +141,16 @@ public class PolicyRepository : IPolicyRepository
             ExpiringWithin30Days = expiring
         };
     }
+
+    public async Task FlagPoliciesAsync(List<Guid> policyIds, CancellationToken cancellationToken = default)
+    {
+        var policies = await _context.Policies
+            .Where(p => policyIds.Contains(p.Id))
+            .ToListAsync(cancellationToken);
+
+        foreach (var policy in policies)
+            policy.FlagForReview();
+
+        await _context.SaveChangesAsync(cancellationToken);
+    }
 }
