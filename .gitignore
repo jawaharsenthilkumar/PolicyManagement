@@ -1,0 +1,67 @@
+## .NET / C#
+bin/
+obj/
+*.user
+*.suo
+*.userprefs
+*.sln.docstates
+.vs/
+_ReSharper*/
+*.resharper
+*.DotSettings.user
+
+## Build outputs
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+## NuGet
+*.nupkg
+*.snupkg
+**/[Pp]ackages/
+!**/[Pp]ackages/build/
+*.nuspec
+project.lock.json
+project.fragment.lock.json
+artifacts/
+nuget.config
+
+## SQLite
+*.db
+*.db-shm
+*.db-wal
+
+## OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+## IDEs
+.idea/
+*.iml
+.vscode/
+!.vscode/extensions.json
+!.vscode/settings.json
+
+## Claude Code tooling
+.mcp.json
+
+## Environment / secrets
+.env
+.env.local
+appsettings.Local.json
+**/secrets.json
+
+## Test results
+TestResults/
+coverage/
+*.coveragexml
+*.trx
